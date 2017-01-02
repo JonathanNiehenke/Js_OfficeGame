@@ -2,7 +2,12 @@ let db = console.log;
 let GAME = {
     Tiles: {},
     Levels: undefined,  // Will hold function generator after init();
-    Environment: {},
+    Player: {x: 0, y: 0},
+    Environment: {
+            cells: {},
+            cellLocations: {},
+            onCell: ' ',
+    },
     keyInput: {
         // 27 : "escape",
         37 : [0, -1], // Left Arrow
@@ -10,13 +15,13 @@ let GAME = {
         39 : [0, 1],  // Right Arrow
         40 : [1, 0],  // Left Arrow
         handle: function(keyEvent) {
-            // Because method is called from document.addListener
-            // this=document, so Key reference is used.
-            let Movement = this[keyEvent.keyCode];
+            let Movement = this.keyInput[keyEvent.keyCode];
             if (Movement) {
-                console.log(Movement);
+                let moveTo = {x: this.Player.x + Movement[0],
+                              y: this.Player.y + Movement[1]};
+                this.movePlayer(moveTo);
             }
-        }
+        },
     },
     populateTiles: function() {
         let tileTypes = "$ #:;@abcdABCDeEfFgGhHiIjJkKlLmMnNqQrRsSpP0123456789";
@@ -30,19 +35,20 @@ let GAME = {
     establishEnvironment: function(Environment, Level) {
         let structureEl = document.getElementById("Structure");
         structureEl.innerHTML = "";  // Removing all decendants.
-        let [Messages, Structure] = Level,
-            colLength = Structure.length;
+        let [Messages, Structure] = Level;
+        let colLength = Structure.length;
         for (let x = 0; x < colLength; ++x) {
-            let rowDiv = document.createElement("div"),
-                Row = Structure[x],
-                rowLength = Row.length;
+            let rowDiv = document.createElement("div");
+            let Row = Structure[x];
+            let rowLength = Row.length;
             for (let y = 0; y < rowLength; ++y) {
                 let Cell = {index: [x, y], value: Row[y]};
                 Environment.cells[Cell.index] = Cell.value;
                 pushKey(Environment.cellLocations, Cell.value, Cell.index);
-                let Tile = GAME.Tiles[Cell.value].cloneNode();
+                let Tile = this.Tiles[Cell.value].cloneNode();
                 rowDiv.appendChild(Tile);
             }
+            rowDiv.id = `row${x}`;
             structureEl.appendChild(rowDiv);
         }
     },
@@ -51,17 +57,32 @@ let GAME = {
         let Environment = {
                 cells: {},
                 cellLocations: {},
-                playerX: 0,
-                playerY: 0,
+                player: {x: 0, y: 0},
+                onCell: ' ',
         };
         if (Level) {
             this.establishEnvironment(Environment, Level);
             startIndex = Environment.cellLocations['$'][0];
-            Environment.cells[startIndex] = GAME.Tiles[' '];
-            Environment.playerX = startIndex[0];
-            Environment.playerY = startIndex[1];
+            Environment.cells[startIndex] = ' ';
+            this.Player.x = startIndex[0];
+            this.Player.y = startIndex[1];
         }
-        this.Environment = Environment;
+        return Environment;
+    },
+    movePlayer: function(moveTo) {
+        let Environment = this.Environment;
+        if (!([moveTo.x, moveTo.y] in Environment.cells))
+            return;  // Prevents walking off of playing zone.
+        let fromRowDiv = document.getElementById(`row${this.Player.x}`);
+        let fromImgEl = fromRowDiv.getElementsByTagName("img")[this.Player.y];
+        fromRowDiv.replaceChild(
+            this.Tiles[Environment.onCell].cloneNode(), fromImgEl);
+        let toRowDiv = document.getElementById(`row${moveTo.x}`);
+        let toImgEl = toRowDiv.getElementsByTagName("img")[moveTo.y];
+        toRowDiv.replaceChild(GAME.Tiles['$'].cloneNode(), toImgEl);
+        Environment.onCell = Environment.cells[[moveTo.x, moveTo.y]];
+        this.Player.x = moveTo.x;
+        this.Player.y = moveTo.y;
     },
 };
 function* parseLevelFile(levelFile) {
@@ -111,6 +132,6 @@ function init() {
     GAME.populateTiles();
     document.getElementById("officeLevels").addEventListener(
         "change", handleFileEvent, false);
-    let handleKey = GAME.keyInput.handle.bind(GAME.keyInput);
+    let handleKey = GAME.keyInput.handle.bind(GAME);
     document.addEventListener("keydown", handleKey, false);
 }
