@@ -4,15 +4,25 @@
     <meta charset="utf-8">
     <title>Office</title>
     <link rel="stylesheet" type="text/css" href="Office.css">
+    <script type="text/javascript" src="TileEngine.js"></script>
     <script type="text/javascript" src="Office.js"></script>
 </head>
 
 <body onload="init()">
 
-<h4 id="levelTitle"></h4>
-<div id="Structure"></div>
+<div id="Game" class="Hidden">
+    <h2 id="levelTitle"></h2>
+    <span id="Structure" style="float: left"></span>
+    <span id="Inventory" style="float: left; border: 1px solid">
+        <img src="Images/Empty.png" id="Key_a" /><br />
+        <img src="Images/Empty.png" id="Key_b" /><br />
+        <img src="Images/Empty.png" id="Key_c" /><br />
+        <img src="Images/Empty.png" id="Key_d" /><br />
+        <img src="Images/DropZone.png" id="Object" />
+    </span>
+</div>
 <input type="file" id="officeLevels" />
-<div id="tileImages">
+<div class="Hidden">
     <img src="Images/Player.png" id="Player" />
     <img src="Images/Empty.png" id="Empty" />
     <img src="Images/Wall.png" id="Wall" />
