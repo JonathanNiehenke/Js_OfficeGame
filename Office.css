@@ -1,3 +1,6 @@
 .Hidden {
     display: none;
 }
+.packLeft {
+    float: left;
+}

@@ -1,3 +1,13 @@
+function pushKey(obj, key, value) {
+    let arr = obj[key];
+    if (arr) {
+        arr.push(value);
+    }
+    else {
+        obj[key] = [value];
+    }
+}
+
 function Engine(Tile, Inventory) {
     this.Tile = Tile;
     this.Inventory = Inventory;
@@ -5,22 +15,23 @@ function Engine(Tile, Inventory) {
     this.Environment = {};
     this.keyInput = {
         // 27: "escape",
-        38: [-1, 0], // Up Arrow
-        40: [1, 0],  // Down Arrow
-        37: [0, -1], // Left Arrow
-        39: [0, 1],  // Right Arrow
-        87: [-1, 0], // W Key (Up)
-        83: [1, 0],  // S Key (Down)
-        65: [0, -1], // A Key (Left)
-        68: [0, 1],  // D Key (Right)
-        73: [-1, 0], // I key (Up)
-        75: [1, 0],  // K Key (Down)
-        74: [0, -1], // J key (Left)
-        76: [0, 1],  // L key (Right)
-        handle: function(keyEvent) {
+        "38": [-1, 0], // Up Arrow
+        "40": [1, 0],  // Down Arrow
+        "37": [0, -1], // Left Arrow
+        "39": [0, 1],  // Right Arrow
+        "87": [-1, 0], // W Key (Up)
+        "83": [1, 0],  // S Key (Down)
+        "65": [0, -1], // A Key (Left)
+        "68": [0, 1],  // D Key (Right)
+        "73": [-1, 0], // I key (Up)
+        "75": [1, 0],  // K Key (Down)
+        "74": [0, -1], // J key (Left)
+        "76": [0, 1],  // L key (Right)
+        "handle": function(keyEvent) {
             let Movement = this.keyInput[keyEvent.keyCode]; if (Movement) {
-                let moveTo = [this.Environment.player[0] + Movement[0],
-                              this.Environment.player[1] + Movement[1]];
+                let moveTo = [
+                    this.Environment.player[0] + Movement[0],
+                    this.Environment.player[1] + Movement[1]];
                 let cellTo = this.Environment.cell[moveTo];
                 let cellAction = this.Tile[cellTo].action;
                 if (moveTo in this.Environment.cell && cellAction) {
@@ -41,7 +52,7 @@ function Engine(Tile, Inventory) {
             let Row = Structure[x];
             let rowLength = Row.length;
             for (let y = 0; y < rowLength; ++y) {
-                let Cell = {index: [x, y], value: Row[y]};
+                let Cell = {"index": [x, y], "value": Row[y]};
                 Environment.cell[Cell.index] = Cell.value;
                 pushKey(Environment.cellLocations, Cell.value, Cell.index);
                 let newTile = this.Tile[Cell.value].image.cloneNode();
@@ -54,23 +65,24 @@ function Engine(Tile, Inventory) {
     this.nextEnvironment = function() {
         let Level = this.Levels.next().value;
         let Environment = {
-                cell: {},
-                cellLocations: {},
-                onCell: ' ',
-                player: [0, 0],
-                end: [0, 0],
-                requirements: 0
+            "cell": {},
+            "cellLocations": {},
+            "onCell": " ",
+            "player": [0, 0],
+            "end": [0, 0],
+            "requirements": 0,
         };
         if (Level) {
             this.establishEnvironment(Environment, Level);
-            startIndex = Environment.cellLocations['$'][0];
-            Environment.cell[startIndex] = ' ';
+            startIndex = Environment.cellLocations["$"][0];
+            Environment.cell[startIndex] = " ";
             Environment.player = startIndex;
-            let requirements = Environment.requirements;
-            requirements += (Environment.cellLocations['e'] || []).length;
-            requirements += (Environment.cellLocations['p'] || []).length;
-            requirements += (Environment.cellLocations['P'] || []).length;
-            endLocations = Environment.cellLocations['E'];
+            Environment.requirements = (
+                (Environment.cellLocations["e"] || []).length +
+                (Environment.cellLocations["p"] || []).length +
+                (Environment.cellLocations["P"] || []).length)
+            db("req set:", Environment.requirements);
+            endLocations = Environment.cellLocations["E"];
             endIndex = endLocations ? endLocations[0] : startIndex;
             Environment.end = endIndex;
         }
@@ -94,4 +106,3 @@ function Engine(Tile, Inventory) {
         Environment.player = moveTo;
     };
 }
-

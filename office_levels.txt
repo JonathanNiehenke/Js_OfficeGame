@@ -150,6 +150,13 @@ q  FKK#
 #GJ#KK#
 #j###@#
 
+"Lock Troubles?"
+#######
+#$aAbC#
+#BADBG#
+#dgECc#
+#######
+
 "Return the flashlight"
 ###@###
 #$#KKK#
