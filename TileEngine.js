@@ -98,6 +98,11 @@ function Engine(Tile, Inventory) {
         this.Environment.cell[cellIndex] = cellValue;
         this.replaceImage(cellIndex, cellValue);
     };
+    this.replaceAllCells = function(currentValue, newValue) {
+        for (cellIndex of this.Environment.cellLocations[currentValue] || []) {
+            this.replaceCell(cellIndex, newValue);
+        }
+    };
     this.movePlayer = function(moveTo) {
         let Environment = this.Environment;
         this.replaceImage(Environment.player, Environment.onCell);

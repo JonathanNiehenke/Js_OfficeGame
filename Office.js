@@ -69,8 +69,8 @@ function OfficeGame() {
     };
     this.changeRequirements = function(value) {
         this.Environment.requirements += value;
-        let changeTo = this.Environment.requirements ? " " : "E";
         let endIndex = this.Environment.end;
+        let changeTo = this.Environment.requirements ? " " : "E";
         this.Environment.cell[endIndex] = changeTo;
         this.replaceImage(endIndex, changeTo);
         db("req change:", this.Environment.requirements);
@@ -81,8 +81,14 @@ function OfficeGame() {
         let currentImgEl = document.getElementById("Object");
         currentImgEl.parentNode.replaceChild(newImgEl, currentImgEl);
         newImgEl.id = "Object";  // Reset the id for later use.
-        this.changeRequirements(cellValue === "@" ? -1 : 1);
-        // self.environment.replace_tiles(':', self.tiles[':'])
+        if (cellValue === "@") {
+            this.changeRequirements(-1);
+            this.replaceAllCells(":", ":");
+        }
+        else {
+            this.changeRequirements(1);
+            this.replaceAllCells(":", ";");
+        }
     };
     this.pickupObject = function(moveTo, cellTo) {
         if (this.Inventory.object === "@") {
@@ -95,7 +101,7 @@ function OfficeGame() {
         if (object === this.Inventory.object) {
             this.__replaceObject("@");
         }
-    }
+    };
     this.__replaceMap = function(moveTo, cellTo) {
         this.Inventory.map[moveTo] = cellTo;
         this.replaceImage(moveTo, cellTo);
@@ -106,7 +112,7 @@ function OfficeGame() {
         this.__replaceObject(fromDrop);
         this.__replaceMap(moveTo, fromHand);
         if (fromDrop !== "@" && fromHand !== "@" ) {  // Swap Item
-            // Refund extra requirement cause by swap.
+            // Refund extra requirement caused by swapping.
             this.changeRequirements(-1);
         }
     };
@@ -124,7 +130,7 @@ function OfficeGame() {
             "$": {"image": getImg("Player"), "action": undefined},
             " ": {"image": getImg("Empty"), "action": this.movePlayer},
             "#": {"image": getImg("Wall"), "action": undefined},
-            ":": {"image": getImg("OpenNarrow"), "action": undefined},
+            ":": {"image": getImg("OpenNarrow"), "action": this.movePlayer},
             ";": {"image": getImg("ClosedNarrow"), "action": undefined},
             "@": {"image": getImg("DropZone"), "action": this.swapObjects},
             "a": {"image": getImg("RedKey"), "action": this.pickupKey},
@@ -147,6 +153,7 @@ function OfficeGame() {
                 "image": getImg("Elevator"),
                 "action": function(moveTo) {
                     this.Environment = this.nextEnvironment();
+                    this.Inventory.map = {};
                 }
             },
             "f": {"image": getImg("LockNumber"), "action": undefined},
@@ -157,12 +164,40 @@ function OfficeGame() {
             "H": {"image": getImg("Desk"), "action": this.dropObject},
             "i": {"image": getImg("Trash"), "action": this.pickupObject},
             "I": {"image": getImg("TrashCan"), "action": this.dropObject},
-            "j": {"image": getImg("Mop"), "action": undefined},
-            "J": {"image": getImg("WetFloor"), "action": undefined},
+            "j": {
+                "image": getImg("Mop"),
+                "action": function(moveTo, cellTo) {
+                    this.Inventory.map[moveTo] = (
+                        this.Inventory.map[moveTo] || "j");
+                    this.swapObjects(moveTo, cellTo);
+                }
+            },
+            "J": {
+                "image": getImg("WetFloor"),
+                "action": function(moveTo, cellTo) {
+                    if (this.Inventory.object === "j") {
+                        this.openCell(moveTo);
+                    }
+                }
+            },
             "k": {"image": getImg("Flashlight"), "action": undefined},
             "K": {"image": getImg("Darkness"), "action": undefined},
-            "l": {"image": getImg("LightOff"), "action": undefined},
-            "L": {"image": getImg("LightOn"), "action": undefined},
+            "l": {
+                "image": getImg("LightOff"),
+                "action": function(moveTo, cellTo) {
+                    this.replaceCell(moveTo, "L");
+                    this.replaceAllCells("K", " ");
+                    this.changeRequirements(1);
+                }
+            },
+            "L": {
+                "image": getImg("LightOn"),
+                "action": function(moveTo, cellTo) {
+                    this.replaceCell(moveTo, "l");
+                    this.replaceAllCells("K", "K");
+                    this.changeRequirements(-1);
+                }
+            },
             "m": {"image": getImg("MotionOn"), "action": undefined},
             "M": {"image": getImg("MotionOff"), "action": undefined},
             "n": {"image": getImg("MotionNumber"), "action": undefined},
