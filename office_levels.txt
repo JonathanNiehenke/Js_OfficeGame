@@ -116,9 +116,9 @@ r #   #
 "And pin numbers my need to be correctly entered."
 #s#####
 #  #Ke#
-q  FKK#
+q   KK#
 #$ #Ke#
-#f#####
+#######
 
 "Office Tour 8: Flashlight"
 "The flashlight allows for safe movement through dark walkways."
@@ -134,7 +134,7 @@ q  FKK#
 #$K N #
 # K N #
 # K Ne#
-#l#n###
+#l#####
 
 "Review"
 #####@#

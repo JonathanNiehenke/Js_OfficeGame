@@ -81,7 +81,7 @@ function Engine(Tile, Inventory) {
                 (Environment.cellLocations["e"] || []).length +
                 (Environment.cellLocations["p"] || []).length +
                 (Environment.cellLocations["P"] || []).length)
-            db("req set:", Environment.requirements);
+            // db("req set:", Environment.requirements);
             endLocations = Environment.cellLocations["E"];
             endIndex = endLocations ? endLocations[0] : startIndex;
             Environment.end = endIndex;

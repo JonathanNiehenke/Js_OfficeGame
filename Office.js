@@ -5,7 +5,7 @@ function OfficeGame() {
     // assigning them later we avoid the chicken and the egg paradox.
     this.__proto__ = new Engine();
     this.parseLevelFile = function*(levelFile) {
-        let fileLines = levelFile.target.result.split("\r\n");
+        let fileLines = levelFile.target.result.split("\n");
         let Messages = [], Structure = [];
         for (let Line of fileLines) {
             let Begin = Line ? Line[0] : "";
@@ -73,7 +73,7 @@ function OfficeGame() {
         let changeTo = this.Environment.requirements ? " " : "E";
         this.Environment.cell[endIndex] = changeTo;
         this.replaceImage(endIndex, changeTo);
-        db("req change:", this.Environment.requirements);
+        // db("req change:", this.Environment.requirements);
     };
     this.__replaceObject = function(cellValue) {
         this.Inventory.object = cellValue;
@@ -100,6 +100,14 @@ function OfficeGame() {
         let object = cellTo.toLowerCase();
         if (object === this.Inventory.object) {
             this.__replaceObject("@");
+        }
+    };
+    this.swapPlug = function(moveTo, cellTo) {
+        if (cellTo === this.Inventory.object) {
+            this.__replaceObject("@");
+        }
+        else if ("@" === this.Inventory.object) {
+            this.__replaceObject(cellTo);
         }
     };
     this.__replaceMap = function(moveTo, cellTo) {
@@ -157,7 +165,7 @@ function OfficeGame() {
                 }
             },
             "f": {"image": getImg("LockNumber"), "action": undefined},
-            "F": {"image": getImg("PinLock"), "action": undefined},
+            "F": {"image": getImg("PinLock"), "action": this.movePlayer},
             "g": {"image": getImg("Cart"), "action": this.pickupObject},
             "G": {"image": getImg("Plant"), "action": this.pickupObject},
             "h": {"image": getImg("Papers"), "action": this.pickupObject},
@@ -202,7 +210,7 @@ function OfficeGame() {
             "M": {"image": getImg("MotionOff"), "action": undefined},
             "n": {"image": getImg("MotionNumber"), "action": undefined},
             "N": {"image": getImg("Signal"), "action": undefined},
-            "q": {"image": getImg("LightPlug"), "action": undefined},
+            "q": {"image": getImg("LightPlug"), "action": this.swapPlug},
             "Q": {"image": getImg("Empty"), "action": undefined},
             "r": {
                 "image": getImg("Computer"),
@@ -212,9 +220,29 @@ function OfficeGame() {
                     }
                 }
             },
-            "R": {"image": getImg("ComputerPlug"), "action": undefined},
-            "s": {"image": getImg("Socket"), "action": undefined},
-            "S": {"image": getImg("PluggedSocket"), "action": undefined},
+            "R": {"image": getImg("ComputerPlug"), "action": this.swapPlug},
+            "s": {
+                "image": getImg("Socket"),
+                "action": function(moveTo, cellTo) {
+                    if ("qRr".indexOf(this.Inventory.object) !== -1) {
+                        this.__replaceMap(moveTo, this.Inventory.object);
+                        this.__replaceObject("@");
+                        this.replaceCell(moveTo, "S");
+                        this.replaceAllCells("q", "l");
+                    }
+                }
+            },
+            "S": {
+                "image": getImg("PluggedSocket"),
+                "action": function(moveTo) {
+                    if (this.Inventory.object === "@") {
+                        this.__replaceObject(this.Inventory.map[moveTo]);
+                        this.__replaceMap(moveTo, "@");
+                        this.replaceCell(moveTo, "s");
+                        this.replaceAllCells("q", "q");
+                    }
+                }
+            },
             "p": {"image": getImg("PrinterX"), "action": undefined},
             "P": {
                 "image": getImg("Printer"),
