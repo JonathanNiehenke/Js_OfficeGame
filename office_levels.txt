@@ -40,8 +40,8 @@
 \ i: Trash - Object that is pick-up and replace by the Empty tile if hands are empty.
 \ I: TrashCan - Permanently drop trash.
 \ q: LightPlug - Object that when dropped in socket enables them.
-\ r: Computer - Activates printer.
-\ R: ComputerPlug - Object that when dropped in socket enables them.
+\ r: ComputerPlug - Object that when dropped in socket enables them.
+\ R: Computer - Activates printer.
 \ s: Socket - Drop plug and energizes ALL initial tiles of that plug.
 \ p: PrinterX - An inactive printer, activate with computer.
 \ P: Printer - An objective required to open the Elevator.
@@ -66,7 +66,7 @@
 "Good! Loved the analysis. The job is yours. But first a tour..."
 "Source information sent from a computer is available at a printer."
 #######
-r #   #
+R #   #
 # #$# #
 #   # p
 #######
@@ -166,13 +166,13 @@ q   KK#
 
 "Returning Synergies"
 ##m####
-n$KN:e#
+#$KN:e#
 # KN :#
 # KN  l
 #k#####
 
 "RE-Plugable"
-#####R#
+#####r#
 #$ K  #
 q  s  k
 #  K  #
@@ -203,7 +203,7 @@ q  s  k
 #######
 #$: K l
 @ # #a#
-p A :Gr
+p A :GR
 #######
 
 \ "Into the office": Movement

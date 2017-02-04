@@ -44,6 +44,7 @@ function OfficeGame() {
         this.Environment.cell[moveTo] = " ";
         this.movePlayer(moveTo);
     };
+// ? Why not use Tile.image
     this.replaceKeyImage = function(keyValue, cellValue) {
         let keyId = `Key_${keyValue}`;
         let newImgEl = this.Tile[cellValue].image.cloneNode();
@@ -73,7 +74,6 @@ function OfficeGame() {
         let changeTo = this.Environment.requirements ? " " : "E";
         this.Environment.cell[endIndex] = changeTo;
         this.replaceImage(endIndex, changeTo);
-        // db("req change:", this.Environment.requirements);
     };
     this.__replaceObject = function(cellValue) {
         this.Inventory.object = cellValue;
@@ -116,12 +116,13 @@ function OfficeGame() {
     };
     this.swapObjects = function(moveTo, cellTo) {
         let fromHand = this.Inventory.object;
-        let fromDrop = this.Inventory.map[moveTo] || "@";
-        this.__replaceObject(fromDrop);
-        this.__replaceMap(moveTo, fromHand);
-        if (fromDrop !== "@" && fromHand !== "@" ) {  // Swap Item
-            // Refund extra requirement caused by swapping.
-            this.changeRequirements(-1);
+        if ("qr".indexOf(fromHand) === -1) {
+            let fromDrop = this.Inventory.map[moveTo] || "@";
+            this.__replaceObject(fromDrop);
+            this.__replaceMap(moveTo, fromHand);
+            if ((fromHand === "@") === (fromDrop === "@")) {
+                this.changeRequirements(fromHand === "@" ? 1 : -1);
+            }
         }
     };
     this.__constructInventory = function() {
@@ -176,7 +177,7 @@ function OfficeGame() {
                 "image": getImg("Mop"),
                 "action": function(moveTo, cellTo) {
                     this.Inventory.map[moveTo] = (
-                        this.Inventory.map[moveTo] || "j");
+                    this.Inventory.map[moveTo] || "j");
                     this.swapObjects(moveTo, cellTo);
                 }
             },
@@ -188,8 +189,22 @@ function OfficeGame() {
                     }
                 }
             },
-            "k": {"image": getImg("Flashlight"), "action": undefined},
-            "K": {"image": getImg("Darkness"), "action": undefined},
+            "k": {
+                "image": getImg("Flashlight"),
+                "action": function(moveTo, cellTo) {
+                    this.Inventory.map[moveTo] = (
+                    this.Inventory.map[moveTo] || "k");
+                    this.swapObjects(moveTo, cellTo);
+                },
+            },
+            "K": {
+                "image": getImg("Darkness"),
+                "action": function(moveTo, cellTo) {
+                    if (this.Inventory.object === "k") {
+                        this.movePlayer(moveTo);
+                    }
+                }
+            },
             "l": {
                 "image": getImg("LightOff"),
                 "action": function(moveTo, cellTo) {
@@ -206,13 +221,28 @@ function OfficeGame() {
                     this.changeRequirements(-1);
                 }
             },
-            "m": {"image": getImg("MotionOn"), "action": undefined},
-            "M": {"image": getImg("MotionOff"), "action": undefined},
+            "m": {
+                "image": getImg("MotionOn"),
+                "action": function(moveTo, cellTo) {
+                    this.replaceCell(moveTo, "M");
+                    this.replaceAllCells("N", " ");
+                    this.changeRequirements(1);
+                }
+            },
+            "M": {
+                "image": getImg("MotionOff"),
+                "action": function(moveTo, cellTo) {
+                    this.replaceCell(moveTo, "m");
+                    this.replaceAllCells("N", "N");
+                    this.changeRequirements(-1);
+                }
+            },
             "n": {"image": getImg("MotionNumber"), "action": undefined},
             "N": {"image": getImg("Signal"), "action": undefined},
             "q": {"image": getImg("LightPlug"), "action": this.swapPlug},
             "Q": {"image": getImg("Empty"), "action": undefined},
-            "r": {
+            "r": {"image": getImg("ComputerPlug"), "action": this.swapPlug},
+            "R": {
                 "image": getImg("Computer"),
                 "action": function(moveTo) {
                     for (Index of this.Environment.cellLocations["p"]) {
@@ -220,26 +250,34 @@ function OfficeGame() {
                     }
                 }
             },
-            "R": {"image": getImg("ComputerPlug"), "action": this.swapPlug},
             "s": {
                 "image": getImg("Socket"),
-                "action": function(moveTo, cellTo) {
-                    if ("qRr".indexOf(this.Inventory.object) !== -1) {
-                        this.__replaceMap(moveTo, this.Inventory.object);
+                "action": function(moveTo) {
+                    Plug = this.Inventory.object
+                    if ("qr".indexOf(Plug) !== -1) {
+                        this.__replaceMap(moveTo, Plug);
                         this.__replaceObject("@");
                         this.replaceCell(moveTo, "S");
-                        this.replaceAllCells("q", "l");
+                        Powers = {"q": "l", "r": "R"}[Plug];
+                        this.replaceAllCells(Plug, Powers);
                     }
                 }
             },
             "S": {
                 "image": getImg("PluggedSocket"),
                 "action": function(moveTo) {
-                    if (this.Inventory.object === "@") {
-                        this.__replaceObject(this.Inventory.map[moveTo]);
+                    Plug = this.Inventory.map[moveTo];
+                    Powers = {"q": "l", "r": "R"}[Plug];
+                    function isOff(cellIndex) {
+                        return this.Environment.cell[cellIndex] === Powers;
+                    }
+                    allUnpowered = this.Environment.cellLocations[Plug].every(
+                        isOff.bind(this));
+                    if (allUnpowered && this.Inventory.object === "@") {
+                        this.__replaceObject(Plug);
                         this.__replaceMap(moveTo, "@");
                         this.replaceCell(moveTo, "s");
-                        this.replaceAllCells("q", "q");
+                        this.replaceAllCells(Plug, Plug);
                     }
                 }
             },

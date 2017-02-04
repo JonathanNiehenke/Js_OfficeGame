@@ -81,7 +81,6 @@ function Engine(Tile, Inventory) {
                 (Environment.cellLocations["e"] || []).length +
                 (Environment.cellLocations["p"] || []).length +
                 (Environment.cellLocations["P"] || []).length)
-            // db("req set:", Environment.requirements);
             endLocations = Environment.cellLocations["E"];
             endIndex = endLocations ? endLocations[0] : startIndex;
             Environment.end = endIndex;
@@ -98,8 +97,8 @@ function Engine(Tile, Inventory) {
         this.Environment.cell[cellIndex] = cellValue;
         this.replaceImage(cellIndex, cellValue);
     };
-    this.replaceAllCells = function(currentValue, newValue) {
-        for (cellIndex of this.Environment.cellLocations[currentValue] || []) {
+    this.replaceAllCells = function(initalValue, newValue) {
+        for (cellIndex of this.Environment.cellLocations[initalValue] || []) {
             this.replaceCell(cellIndex, newValue);
         }
     };
