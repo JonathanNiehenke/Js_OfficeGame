@@ -44,13 +44,11 @@ function OfficeGame() {
         this.Environment.cell[moveTo] = " ";
         this.movePlayer(moveTo);
     };
-// ? Why not use Tile.image
     this.replaceKeyImage = function(keyValue, cellValue) {
-        let keyId = `Key_${keyValue}`;
         let newImgEl = this.Tile[cellValue].image.cloneNode();
-        let currentImgEl = document.getElementById(keyId);
+        let currentImgEl = document.getElementById(keyValue);
         currentImgEl.parentNode.replaceChild(newImgEl, currentImgEl);
-        newImgEl.id = keyId;  // Reset the id for later use.
+        newImgEl.id = keyValue;  // Reset the id for later use.
     };
     this.pickupKey = function(moveTo) {
         let cellTo = this.Environment.cell[moveTo];
@@ -92,8 +90,8 @@ function OfficeGame() {
     };
     this.pickupObject = function(moveTo, cellTo) {
         if (this.Inventory.object === "@") {
-            this.__replaceObject(cellTo);
             this.openCell(moveTo);
+            this.__replaceObject(cellTo);
         }
     };
     this.dropObject = function(moveTo, cellTo) {
@@ -163,6 +161,14 @@ function OfficeGame() {
                 "action": function(moveTo) {
                     this.Environment = this.nextEnvironment();
                     this.Inventory.map = {};
+                    if (Object.keys(this.Environment.cell).length === 0) {
+                        let levelTitle = document.getElementById("levelTitle");
+                        levelTitle.innerHTML = "Game Complete!";
+                        let structureEl = document.getElementById("Structure");
+                        structureEl.innerHTML = "";
+                        let inventoryEl = document.getElementById("Inventory");
+                        inventoryEl.innerHTML = "";
+                    }
                 }
             },
             "f": {"image": getImg("LockNumber"), "action": undefined},
@@ -246,7 +252,9 @@ function OfficeGame() {
                 "image": getImg("Computer"),
                 "action": function(moveTo) {
                     for (Index of this.Environment.cellLocations["p"]) {
-                        this.replaceCell(Index, "P");
+                        if (this.Environment.cell[Index] === "p") {
+                            this.replaceCell(Index, "P");
+                        }
                     }
                 }
             },
@@ -312,5 +320,5 @@ function init() {
     document.getElementById("officeLevels").addEventListener(
         "change", handleFileEvent, false);
     let handleKey = officeGame.keyInput.handle.bind(officeGame);
-    document.addEventListener("keydown", handleKey, false);
+    document.addEventListener("keydown", handleKey);
 }
