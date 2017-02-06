@@ -1,5 +1,5 @@
 img {
-    vertical-align: top;
+    vertical-align: top;  /* Removes the white space below the image.*/
     margin: 1px;
 }
 .Hidden {
@@ -7,4 +7,8 @@ img {
 }
 .packLeft {
     float: left;
+}
+#resetButton {
+    background-color: red;
+    color: white;
 }

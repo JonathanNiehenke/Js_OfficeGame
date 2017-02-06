@@ -1,8 +1,6 @@
 let db = console.log;
 
 function OfficeGame() {
-    // Tile actions requires the Engine prototype. By manually
-    // assigning them later we avoid the chicken and the egg paradox.
     this.__proto__ = new Engine();
     this.parseLevelFile = function*(levelFile) {
         let fileLines = levelFile.target.result.split("\n");
@@ -30,6 +28,7 @@ function OfficeGame() {
         function onFileLoad(levelFile) {
             this.Levels = this.parseLevelFile(levelFile);
             this.Environment = this.nextEnvironment();
+            this.Inventory = new this.__constructInventory();
         }
         let levelFile = fileEvent.target.files[0];
         if (levelFile) {
@@ -39,6 +38,17 @@ function OfficeGame() {
             document.getElementById("Game").className = "";
             document.getElementById("officeLevels").className = "Hidden";
         }
+    };
+    this.resetKeys = function() { for (Key of "abcd") {
+            this.replaceKeyImage(Key, " ");
+            this.Inventory.key[Key] = 0;
+        }
+    };
+    this.handleReset = function() {
+        this.__replaceObject("@");
+        this.resetKeys();
+        this.Inventory.map = {};
+        this.resetEnvironment();
     };
     this.openCell = function(moveTo) {
         this.Environment.cell[moveTo] = " ";
@@ -124,12 +134,9 @@ function OfficeGame() {
         }
     };
     this.__constructInventory = function() {
-        Inventory = {
-            "key": {"a": 0, "b": 0, "c": 0, "d": 0},
-            "map": {},
-            "object": "@",
-        };
-        return Inventory;
+        this.key = {"a": 0, "b": 0, "c": 0, "d": 0};
+        this.object = "@";
+        this.map = {};
     };
     this.__constructTiles = function() {
         let getImg = document.getElementById.bind(document);
@@ -160,14 +167,16 @@ function OfficeGame() {
                 "image": getImg("Elevator"),
                 "action": function(moveTo) {
                     this.Environment = this.nextEnvironment();
-                    this.Inventory.map = {};
+                    this.Inventory = new this.__constructInventory();
                     if (Object.keys(this.Environment.cell).length === 0) {
                         let levelTitle = document.getElementById("levelTitle");
                         levelTitle.innerHTML = "Game Complete!";
                         let structureEl = document.getElementById("Structure");
-                        structureEl.innerHTML = "";
+                        structureEl.className = "Hidden";
                         let inventoryEl = document.getElementById("Inventory");
-                        inventoryEl.innerHTML = "";
+                        inventoryEl.className = "Hidden";
+                        let buttonEl = document.getElementById("resetButton");
+                        buttonEl.className = "Hidden";
                     }
                 }
             },
@@ -311,7 +320,6 @@ function OfficeGame() {
         return Tile;
     };
     this.Tile = this.__constructTiles();
-    this.Inventory = this.__constructInventory();
 }
 
 function init() {
@@ -321,4 +329,6 @@ function init() {
         "change", handleFileEvent, false);
     let handleKey = officeGame.keyInput.handle.bind(officeGame);
     document.addEventListener("keydown", handleKey);
+    document.getElementById("resetButton").addEventListener(
+        "click", officeGame.handleReset.bind(officeGame), false);
 }
