@@ -1,20 +1,48 @@
 let db = console.log;
 
 function OfficeGame() {
-    this.__proto__ = new Engine();
+    this.__proto__ = new Engine(undefined, "$", " ");
+    this.end = undefined;
+    this.requirements = 0;
+    this.keyInput = {
+        "38": new IndexObj(-1, 0), // Up Arrow
+        "40": new IndexObj(1, 0),  // Down Arrow
+        "37": new IndexObj(0, -1), // Left Arrow
+        "39": new IndexObj(0, 1),  // Right Arrow
+        "87": new IndexObj(-1, 0), // W Key (Up)
+        "83": new IndexObj(1, 0),  // S Key (Down)
+        "65": new IndexObj(0, -1), // A Key (Left)
+        "68": new IndexObj(0, 1),  // D Key (Right)
+        "73": new IndexObj(-1, 0), // I key (Up)
+        "75": new IndexObj(1, 0),  // K Key (Down)
+        "74": new IndexObj(0, -1), // J key (Left)
+        "76": new IndexObj(0, 1),  // L key (Right)
+        "handle": function(keyEvent) {
+            let Movement = this.keyInput[keyEvent.keyCode]; if (Movement) {
+                let moveTo = this.Environment.player.add(Movement);
+                let cellTo = this.Environment.cell[moveTo.toString()];
+                let cellAction = this.Tile[cellTo].action;
+                if (cellAction) {
+                    cellAction.call(this, moveTo, cellTo, Movement);
+                }
+            }
+        },
+    };
     this.parseLevelFile = function*(levelFile) {
+        let titleEl = document.getElementById("levelTitle");
         let fileLines = levelFile.target.result.split("\n");
-        let Messages = [], Structure = [];
+        let Structure = [], messageLine = 0;
         for (let Line of fileLines) {
             let Begin = Line ? Line[0] : "";
             if (!Begin && Structure.length) {
-                yield [Messages, Structure];
+                yield Structure;
                 // Previous references are gone.
-                Messages = [];
                 Structure = [];
             }
-            else if (Begin === "\"") {
-                Messages.push(Line);
+            else if (Begin === "\"") {  // Absorbing the other messages
+                if (!messageLine) {
+                    titleEl.innerHTML = Line;
+                }
             }
             else if (Begin === "\\" || !Begin) {
                 continue;
@@ -28,6 +56,12 @@ function OfficeGame() {
         function onFileLoad(levelFile) {
             this.Levels = this.parseLevelFile(levelFile);
             this.Environment = this.nextEnvironment();
+            this.requirements = (
+                (this.Environment.cellLocations["e"] || []).length +
+                (this.Environment.cellLocations["p"] || []).length +
+                (this.Environment.cellLocations["P"] || []).length);
+            endLocations = this.Environment.cellLocations["E"];
+            this.end = endLocations ? endLocations[0] : startIndex;
             this.Inventory = new this.__constructInventory();
         }
         let levelFile = fileEvent.target.files[0];
@@ -39,7 +73,8 @@ function OfficeGame() {
             document.getElementById("officeLevels").className = "Hidden";
         }
     };
-    this.resetKeys = function() { for (Key of "abcd") {
+    this.resetKeys = function() {
+        for (Key of "abcd") {
             this.replaceKeyImage(Key, " ");
             this.Inventory.key[Key] = 0;
         }
@@ -49,6 +84,14 @@ function OfficeGame() {
         this.resetKeys();
         this.Inventory.map = {};
         this.resetEnvironment();
+        this.requirements = (
+            (this.Environment.cellLocations["e"] || []).length +
+            (this.Environment.cellLocations["p"] || []).length +
+            (this.Environment.cellLocations["P"] || []).length
+        );
+    };
+    this.movePlayer = function(moveTo, cellTo, Movement) {
+        this.placePlayer(moveTo, "$")
     };
     this.openCell = function(moveTo) {
         this.Environment.cell[moveTo] = " ";
@@ -77,11 +120,10 @@ function OfficeGame() {
         }
     };
     this.changeRequirements = function(value) {
-        this.Environment.requirements += value;
-        let endIndex = this.Environment.end;
-        let changeTo = this.Environment.requirements ? " " : "E";
-        this.Environment.cell[endIndex] = changeTo;
-        this.replaceImage(endIndex, changeTo);
+        this.requirements += value;
+        let changeTo = this.requirements ? " " : "E";
+        this.Environment.cell[this.end] = changeTo;
+        this.replaceImage(this.end, changeTo);
     };
     this.__replaceObject = function(cellValue) {
         this.Inventory.object = cellValue;
@@ -167,6 +209,12 @@ function OfficeGame() {
                 "image": getImg("Elevator"),
                 "action": function(moveTo) {
                     this.Environment = this.nextEnvironment();
+                    this.requirements = (
+                        (this.Environment.cellLocations["e"] || []).length +
+                        (this.Environment.cellLocations["p"] || []).length +
+                        (this.Environment.cellLocations["P"] || []).length);
+                    endLocations = this.Environment.cellLocations["E"];
+                    this.end = endLocations ? endLocations[0] : startIndex;
                     this.Inventory = new this.__constructInventory();
                     if (Object.keys(this.Environment.cell).length === 0) {
                         let levelTitle = document.getElementById("levelTitle");
