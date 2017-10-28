@@ -122,8 +122,8 @@ function OfficeGame() {
     this.changeRequirements = function(value) {
         this.requirements += value;
         let changeTo = this.requirements ? " " : "E";
-        this.Environment.cell[this.end] = changeTo;
-        this.replaceImage(this.end, changeTo);
+        this.Environment.cell[this.Environment.end] = changeTo;
+        this.replaceImage(this.Environment.end, changeTo);
     };
     this.__replaceObject = function(cellValue) {
         this.Inventory.object = cellValue;
@@ -214,7 +214,6 @@ function OfficeGame() {
                         (this.Environment.cellLocations["p"] || []).length +
                         (this.Environment.cellLocations["P"] || []).length);
                     endLocations = this.Environment.cellLocations["E"];
-                    this.end = endLocations ? endLocations[0] : startIndex;
                     this.Inventory = new this.__constructInventory();
                     if (Object.keys(this.Environment.cell).length === 0) {
                         let levelTitle = document.getElementById("levelTitle");
