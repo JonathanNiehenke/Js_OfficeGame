@@ -83,7 +83,7 @@ function OfficeGame() {
         this.__replaceObject("@");
         this.resetKeys();
         this.Inventory.map = {};
-        this.resetEnvironment();
+        this.Environment = this.resetEnvironment();
         this.requirements = (
             (this.Environment.cellLocations["e"] || []).length +
             (this.Environment.cellLocations["p"] || []).length +
